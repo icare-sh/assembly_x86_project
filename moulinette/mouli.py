@@ -182,6 +182,7 @@ def compare_result(test_path):
     d = {}
     for k, v in res.items():
         d[k] = exe_result[k] == v
+        print(v)
     return d
 
 #print(compare_result("./test"))
