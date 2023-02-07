@@ -1,12 +1,6 @@
 #include <stdio.h>
 
-
-// print a number
-// algo de tree
-// print list
-
-
-void orderlist(long long *, int);
+void orderlist(long long *list, int size);
 
 long long li[] = {0x10, 0x3, 0x8};
 

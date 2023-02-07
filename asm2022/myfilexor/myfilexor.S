@@ -1,8 +1,7 @@
 global myfilexor
     section .text
 
-extern malloc
-
+extern calloc
 ; [rbp - 8] = filename
 ; [rbp - 16] = key
 ; [rbp - 24] = size
@@ -31,9 +30,14 @@ myfilexor:
     syscall
     mov [rbp-24], rax
 
-    ; malloc buffer of size [rbp-24]
-    mov rdi, qword [rbp-24] 
-    call malloc wrt ..plt
+    ; calloc buuffer of size file size and 1 byte
+    xor rdi, rdi
+    xor rsi, rsi
+    mov rdi, [rbp-24]
+    inc rdi
+    mov rsi, 1
+    call calloc wrt ..plt
+    
     mov [rbp-32], rax 
     mov [rbp-40], rax 
 

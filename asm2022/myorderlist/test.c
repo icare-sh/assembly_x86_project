@@ -1,31 +1,60 @@
-#define _POSIX_C_SOURCE 200809L
-
+#define _GNU_SOURCE
 #include <unistd.h>
 #include <stdio.h>
-#include <math.h>
+#include <stdlib.h>
+#include <sys/mman.h>
 
-long long li[] = {0x11, 0x3, 0x8};
+long long li[] = {0x10, 0x3, 0x8};
 
 
-void printlist(long long *list, int size) {
-
+char* Myitoa(int num, char* str)
+{
     int i = 0;
-    char c = '0';
+    char* p = str;
+    char* p1, *p2;
+    unsigned long long u = num;
 
+    do
+    {
+        int rem = u % 10;
+        *(p + i++) = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
+    } while (u /= 10);
 
+    *(p + i) = '\0';
 
-    while (i < size - 1) {
-       
-        write(1, &i, 1);
-        write(1, ", ", 2);
-        i++;
+    p1 = p;
+    p2 = p + i - 1;
+
+    while (p1 < p2)
+    {
+        char tmp = *p1;
+        *p1 = *p2;
+        *p2 = tmp;
+        p1++;
+        p2--;
     }
-    write(1, &list[size -1], 1);
-    write(1, "\n", 1);
+    return p;
 }
-int main() {
 
-    printlist(li, 3);
 
-    return 0;
+
+int main(void) {
+  char *ptr;
+  size_t size = 4096;
+
+  ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  if (ptr == MAP_FAILED) {
+    perror("mmap");
+    return 1;
+  }
+
+  int i = 0;
+    for (i = 0; i < 3; i++) {
+        char *str = Myitoa(li[i], ptr);
+        printf("%s\n", str);
+    }
+
+  printf("Allocated memory at address %p with size %ld\n", ptr, size);
+  munmap(ptr, size);
+  return 0;
 }
