@@ -6,24 +6,25 @@ myitoa:
     mov rbx, 0 ; flag for negative
     mov rcx , 0 ; counter = 0
     cmp byte [rdi], '-'
-    jne positive
+    jne loop
 
     mov rbx, 1 ; flag for negative
-    inc rdi ; skip the '-'
+    inc rdi 
 
-positive:
+loop:
     cmp byte [rdi], 0
     je end
 
-    mov rax, rcx ; save rcx
-    imul rax, 10 ; multiply by 10
-    mov rcx, rax ; save the result
-    movzx rax, byte [rdi] ; get the digit
-    sub rax, '0' ; convert to number
-    add rcx, rax ; add to the result
+    ; rcx = rcx * 10 + (rdi - '0')
+    mov rax, rcx 
+    imul rax, 10 
+    mov rcx, rax 
+    movzx rax, byte [rdi] 
+    sub rax, '0' 
+    add rcx, rax 
 
-    inc rdi ; next digit
-    jmp positive
+    inc rdi
+    jmp loop
 
 end:
     cmp rbx, 1 ; check if negative
