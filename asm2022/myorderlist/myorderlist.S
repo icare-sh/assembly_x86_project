@@ -7,7 +7,10 @@ orderlist:
     push rdi
     push rsi
     sub rsp, 128
-
+    mov dword [rbp - 64], 0
+    mov dword [rbp - 56], 1
+    
+print:
     ; allocate space for a char * buffer with syscall mmap
     mov rdi, 0    ; address
     mov rsi, 0x1000 ; size
@@ -17,15 +20,18 @@ orderlist:
     mov r9, 0     ; offset
     mov rax, 9    ; syscall number
     syscall
-
+    
+    mov r8, [rbp - 64]
+    mov r9, [rbp - 56]
+    
 atoi:
     ; rdi = source integer
     ; rbx = Target address (buffer)
-
+    mov rdi , [ rbp - 8]
     mov rbx, rax   ; save the address of the buffer in rbx
     mov rcx, rax  ; save the address of the buffer in rcx
     mov rdx, 10   ; base
-    mov rax, 0x10 ; number to convert
+    mov rax, [rdi + r8] ; rax = *rdi
 
 divrem:
     push rdx
@@ -70,6 +76,11 @@ write:
     mov rax, 1    ; syscall number
     syscall
 
+    add dword [rbp - 64], 8
+    
+    inc dword [rbp - 56]
+    cmp r9, [rbp - 16]
+    jne print
 end: 
     mov rax, 60
     xor rdi, rdi
