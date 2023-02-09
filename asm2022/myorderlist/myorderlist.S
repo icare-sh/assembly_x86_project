@@ -123,7 +123,8 @@ endreverse:
     mov [rbx + r9] , dl
     inc r9
     inc r8
-    cmp r8, r10
+    dec r10
+    cmp r10, 0
     jne swap_bytes
     
     mov rax, rbx
