@@ -1,8 +1,8 @@
 global mydiv
-  section .text
+section .text
 
 mydiv:
-    mov rbx, rdx ; store address of [rcx] in rbx
+    mov rbx, rdx ; store address of  rbx
     ; check if divisor = 0
     cmp rsi, 0
     je  error
@@ -12,10 +12,10 @@ mydiv:
     mov rdx, 0
     div rsi
 
-    ; store quotient in [rcx]
+    ; store quotient in [rbx]
     mov qword [rbx], rax
 
-    ; store remainder in [rcx + 8]
+    ; store remainder in [rbx + 8]
     mov qword [rbx + 8], rdx
 
     mov rax, 1 ; set return value to 1

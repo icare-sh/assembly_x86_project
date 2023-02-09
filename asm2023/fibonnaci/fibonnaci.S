@@ -9,10 +9,10 @@ fibonnaci:
     jne negative   ; if rdi is negative, return -1
 
     cmp rdi, 0
-    jle end01     ; if rdi is 0 or 1, return 1
+    jle end0     ; if rdi is 0 or 1, return 1
     
     cmp rdi, 1
-    jle end01      ; if rdi is 0 or 1, return 1
+    jle end1      ; if rdi is 0 or 1, return 1
     
     mov rax, 1
     mov rbx, 1
@@ -34,9 +34,13 @@ loop:
 end:
     ret
 
-end01:
+end1:
     mov rax, 1
     ret
+end0:
+    mov rax, 0
+    ret
+
 negative:
     mov rax, -1
     ret
