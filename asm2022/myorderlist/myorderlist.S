@@ -57,12 +57,13 @@ print:
     mov r9, 0     ; offset
     mov rax, 9    ; syscall number
     syscall
-    
+
     mov r8, [rbp - 64] ; r8 = r8 + 8
     mov r9, [rbp - 56]
+    xor r10, r10 ; r10 = 0 r10 number of caracters of the number
 
-; ASCCII TO INTEGER  
-atoi:
+; INTEGER TO ASCII  
+itoa:
     ; rdi = source integer
     ; rbx = Target address (buffer)
     mov rdi , [rbp - 8]
@@ -77,19 +78,20 @@ divrem:
     mov rcx, rdx   ; base
     xor rdx, rdx   ; rdx = 0
     div rcx       ; rax = rax / rcx, rdx = rax % rcx
+    add r10, 1    ; r10 = r10 + 1
     cmp rdx, 9    ; rdx > 9
     ja uppercase
     
     add rdx, '0'  ; dl = '0123456789'[rdx]
     jmp writechar
-
+    
     uppercase:
         sub rdx, 10 ; rdx = rdx - 10
         add rdx, 'A' ; dl = 'ABCDEF'[rdx]
         mov byte dl, [rdx]  ; dl = 'ABCDEF'[rdx]
     
     writechar:
-        mov byte [rbx], dl ; write the character to the buffer
+        mov [rbx], dl ; *rbx = dl   
         pop rcx
         pop rdx
         inc rbx ; increment the buffer pointer
@@ -109,13 +111,31 @@ reverse:
     jmp reverse
 endreverse:
     mov rax, rcx
-
+    mov [rbp - 72], r10 ; save the number of caracters of the number
+    ; swap [rax] and [rax + 1]
+    xor r9, r9
+    xor r8, r8
+    mov r9,  0
+    mov r8,  1
+    mov rbx, rax
+    swap_bytes:
+    mov dl, [rax + r8]
+    mov [rbx + r9] , dl
+    inc r9
+    inc r8
+    cmp r8, r10
+    jne swap_bytes
+    
+    mov rax, rbx
+    mov r8, [rbp - 64] ; r8 = r8 + 8
+    mov r9, [rbp - 56]
+    
 ; WRITE A STRING
 write:
     ; write the buffer to stdout
     mov rdi, 1    ; fd
     mov rsi, rax  ; buffer
-    mov rdx, 0x1000 ; size
+    mov rdx, [rbp - 72] ; size
     mov rax, 1    ; syscall number
     syscall
 
