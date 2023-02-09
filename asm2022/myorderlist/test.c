@@ -18,7 +18,7 @@ char* Myitoa(int num, char* str)
     {
         int rem = u % 10;
         *(p + i++) = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
-    } while (u /= 10);
+    } while (u /= 10); // u /= 10 is equivalent to u = u / 10
 
     *(p + i) = '\0';
 

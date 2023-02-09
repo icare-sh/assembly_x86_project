@@ -7,10 +7,44 @@ orderlist:
     push rdi
     push rsi
     sub rsp, 128
+    
+sort:
+    cmp rsi, 1 ; rsi == 1
+    je sortend ; if rsi == 1, then end
+
+    mov rsi, rsi
+    lea rcx, [rdi + rsi * 8 - 8] ; rcx = rdi + rsi * 8 - 8
+loop:
+    lea rdx, [rdi + 8] ; rdx = rdi + 8
+
+innerloop:
+    mov rax, [rdi] ; rax = *rdi
+    mov rbx, [rdx] ; rbx = *rdx
+    cmp rax, rbx ; rax > rbx
+    jle skipswap ; if rax <= rbx, then skip swap
+
+    mov [rdi], rbx ; *rdi = rbx
+    mov [rdx], rax ; *rdx = rax
+skipswap:
+    add rdx, 8 ; rdx = rdx + 8
+    cmp rdx, rcx ; rdx > rcx
+    jbe innerloop ; if rdx <= rcx, then continue
+
+    add rdi, 8 ; rdi = rdi + 8
+    cmp rdi, rcx ; rdi > rcx
+    jb loop ; if rdi <= rcx, then continue
+
+    mov rsi, [rbp - 16]
+    sub rsi, 1
+    mov rax, 8
+    mul rsi 
+    sub rdi, rax
+sortend:
+    mov [ rbp - 8], rdi
     mov dword [rbp - 64], 0
     mov dword [rbp - 56], 1
-    
 print:
+
     ; allocate space for a char * buffer with syscall mmap
     mov rdi, 0    ; address
     mov rsi, 0x1000 ; size
@@ -27,7 +61,7 @@ print:
 atoi:
     ; rdi = source integer
     ; rbx = Target address (buffer)
-    mov rdi , [ rbp - 8]
+    mov rdi , [rbp - 8]
     mov rbx, rax   ; save the address of the buffer in rbx
     mov rcx, rax  ; save the address of the buffer in rcx
     mov rdx, 10   ; base
