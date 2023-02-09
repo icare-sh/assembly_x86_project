@@ -7,7 +7,8 @@ orderlist:
     push rdi
     push rsi
     sub rsp, 128
-    
+
+; SORT THE TABLE
 sort:
     cmp rsi, 1 ; rsi == 1
     je sortend ; if rsi == 1, then end
@@ -41,8 +42,10 @@ skipswap:
     sub rdi, rax
 sortend:
     mov [ rbp - 8], rdi
-    mov dword [rbp - 64], 0
-    mov dword [rbp - 56], 1
+    mov dword [rbp - 64], 0 ; r8 = 0 for indexing the table
+    mov dword [rbp - 56], 1 ; r9 = 1 for incrementing the size
+
+; PRINT THE TABLE
 print:
 
     ; allocate space for a char * buffer with syscall mmap
@@ -55,9 +58,10 @@ print:
     mov rax, 9    ; syscall number
     syscall
     
-    mov r8, [rbp - 64]
+    mov r8, [rbp - 64] ; r8 = r8 + 8
     mov r9, [rbp - 56]
-    
+
+; ASCCII TO INTEGER  
 atoi:
     ; rdi = source integer
     ; rbx = Target address (buffer)
@@ -78,10 +82,12 @@ divrem:
     
     add rdx, '0'  ; dl = '0123456789'[rdx]
     jmp writechar
+
     uppercase:
         sub rdx, 10 ; rdx = rdx - 10
         add rdx, 'A' ; dl = 'ABCDEF'[rdx]
         mov byte dl, [rdx]  ; dl = 'ABCDEF'[rdx]
+    
     writechar:
         mov byte [rbx], dl ; write the character to the buffer
         pop rcx
@@ -90,6 +96,7 @@ divrem:
         cmp rax, 0 ; rax == 0
         jne divrem ; if rax != 0, then continue
         mov rax, rcx ; restore the address of the buffer
+
 reverse:
     cmp rax, rbx
     jge endreverse
@@ -102,19 +109,85 @@ reverse:
     jmp reverse
 endreverse:
     mov rax, rcx
+
+; WRITE A STRING
 write:
-    ; rwrite the buffer to stdout
+    ; write the buffer to stdout
     mov rdi, 1    ; fd
     mov rsi, rax  ; buffer
     mov rdx, 0x1000 ; size
     mov rax, 1    ; syscall number
     syscall
 
-    add dword [rbp - 64], 8
-    
-    inc dword [rbp - 56]
-    cmp r9, [rbp - 16]
+    ; mummap the buffer with syscall munmap
+    mov rdi, rax  ; address
+    mov rsi, 0x1000 ; size
+    mov rax, 11   ; syscall number
+    syscall
+
+    cmp r9, [rbp - 16]  ; r9 > rsi
+    je no_print_comma
+
+    ; allocate space for ', ' with mmap
+    mov rdi, 0    ; address
+    mov rsi, 0x1000 ; size
+    mov rdx, 0x1 | 0x2  ; read/write
+    mov r10, 0x02 | 0x20 ; anonymous, private
+    mov r8, -1    ; fd
+    mov r9, 0     ; offset
+    mov rax, 9    ; syscall number
+    syscall
+
+    ; put ', ' in the buffer
+    mov byte [rax], ','
+    mov byte [rax + 1], ' '
+
+    ; write the buffer to stdout
+    mov rdi, 1    ; fd
+    mov rsi, rax  ; buffer
+    mov rdx, 2    ; size
+    mov rax, 1    ; syscall number
+    syscall
+
+    ; mummap the buffer with syscall munmap
+    mov rdi, rax  ; address
+    mov rsi, 0x1000 ; size
+    mov rax, 11   ; syscall number
+    syscall
+
+    no_print_comma:
+
+    mov r8, [rbp - 64] ; r8 = r8 + 8
+    mov r9, [rbp - 56] ; r9 = r9 + 1
+
+    add dword [rbp - 64], 8 ; r8 = r8 + 8
+    inc dword [rbp - 56] ; r9 = r9 + 1
+    cmp r9, [rbp - 16]  ; r9 > rsi
     jne print
+    
+    ; allocate space for newline with mmap
+    mov rdi, 0    ; address
+    mov rsi, 0x1000 ; size
+    mov rdx, 0x1 | 0x2  ; read/write
+    mov r10, 0x02 | 0x20 ; anonymous, private
+    mov r8, -1    ; fd
+    mov r9, 0     ; offset
+    mov rax, 9    ; syscall number
+    syscall
+
+    ; put a newline in the buffer
+    mov byte [rax], 10
+    mov rdi, 1    ; fd
+    mov rsi, rax  ; buffer
+    mov rdx, 1    ; size
+    mov rax, 1    ; syscall number
+    syscall
+
+    ; munmap the buffer
+    mov rdi, rax  ; buffer
+    mov rsi, 0x1000 ; size
+    mov rax, 11   ; syscall number
+    syscall
 end: 
     mov rax, 60
     xor rdi, rdi
@@ -122,4 +195,5 @@ end:
     pop rsi
     pop rdi
     pop rbp
+    add rsp, 128
     ret
