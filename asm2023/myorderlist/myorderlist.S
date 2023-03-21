@@ -210,9 +210,6 @@ write:
     mov rax, 11   ; syscall number
     syscall
 end: 
-    mov rax, 60
-    xor rdi, rdi
-    syscall
     pop rsi
     pop rdi
     pop rbp
